@@ -1,10 +1,10 @@
 import pandas as pd
-import plotly.express as ps
+import plotly.express as px
 import streamlit as st
 import re
 
 
-# ----- Setting up the page -----
+################## ----- Setting up the page -----
 st.set_page_config(page_title="Youtube Most Subscribed To Channels",
                    page_icon=":bar_chart:",
                    layout="wide")
@@ -21,7 +21,7 @@ df = df.iloc[:, 1:]
 st.dataframe(df)
 
 
-# ----- Sidebar -----
+################## ----- Sidebar -----
 st.sidebar.header("Add Filter:")
 country = st.sidebar.multiselect("Select the Country:", 
                                  options=df['Country'].unique(), 
@@ -55,7 +55,7 @@ df_selection = df.query(query_string)
 
 
 
-# ----- MAINPAGE -----
+################## ----- MAINPAGE -----
 st.title("🥇 Ranking Dashboard")
 st.markdown("##")
 
@@ -75,3 +75,53 @@ with right_column:
     st.subheader(f"{average_subs_by_ranking}")
 
 st.markdown("---")
+
+#Subscribers by Country
+subs_by_country = (
+    df_selection.groupby(by=['Country']).sum()[["Subscribers (millions)"]]
+        .sort_values(by="Subscribers (millions)")
+)
+
+fig_subs = px.bar(
+    subs_by_country,
+    x="Subscribers (millions)",
+    y=subs_by_country.index,
+    orientation="h",
+    title="<b>Subscribers by Country:</b>",
+    color_discrete_sequence=["#0083B8"]*len(subs_by_country),
+    template="plotly_white",
+)
+fig_subs.update_layout(
+    plot_bgcolor = "rgba(0,0,0,0)",
+    xaxis = (dict(showgrid=False)),
+)
+st.plotly_chart(fig_subs)
+
+#Subscribers by Country
+subs_by_category = (
+    df_selection.groupby(by=['Category']).sum()[["Subscribers (millions)"]]
+        .sort_values(by="Subscribers (millions)")
+)
+
+fig_pie = px.pie(
+    subs_by_category,
+    names=subs_by_category.index,
+    values="Subscribers (millions)",
+    title="<b>Subscribers by Category:</b>",
+    color_discrete_sequence=px.colors.qualitative.Plotly,
+    template="plotly_white",
+)
+st.plotly_chart(fig_pie)
+
+
+
+################## ------- STYLING OF THE PAGE -------
+#hiding Streamlit default styling
+hide_st_styles = """
+                <style>
+                #MainMenu {visibility:hidden;}
+                footer {visibility:hidden;}
+                header {visibility:hidden;}
+                </style>
+                """
+st.markdown(hide_st_styles, unsafe_allow_html=True)
