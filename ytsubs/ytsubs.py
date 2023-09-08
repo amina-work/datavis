@@ -18,16 +18,13 @@ df = df.iloc[:-1]
 # Remove the first column (Unnamed)
 df = df.iloc[:, 1:]
 
-st.dataframe(df)
+#st.dataframe(df)
 
 
 ################## ----- Sidebar -----
 st.sidebar.header("Add Filter:")
-country = st.sidebar.multiselect("Select the Country:", 
-                                 options=df['Country'].unique(), 
-                                 default=df['Country'].unique()
-                                 )
 
+#Removing the [] at the end of some lines
 def extract_language_name(text):
     # Use a regular expression to match and extract the language name
     match = re.search(r'^([^\[]+)', text)
@@ -42,6 +39,11 @@ df['Primary language'] = df['Primary language'].apply(extract_language_name)
 language = st.sidebar.multiselect("Select the Language:", 
                                  options=df['Primary language'].unique(), 
                                  default=df['Primary language'].unique()
+                                 )
+
+country = st.sidebar.multiselect("Select the Country:", 
+                                 options=df['Country'].unique(), 
+                                 default=df['Country'].unique()
                                  )
 
 category = st.sidebar.multiselect("Select the Category:", 
@@ -59,20 +61,22 @@ df_selection = df.query(query_string)
 st.title("🥇 Ranking Dashboard")
 st.markdown("##")
 
+#changing the column data from string to float
 df_selection["Subscribers (millions)"] = df_selection["Subscribers (millions)"].astype(float)
 
 
 #Top KPI
 total_subs = float(df_selection["Subscribers (millions)"].sum()) #counting the subs all together then turning them to int
-average_subs_by_ranking = round(df_selection["Subscribers (millions)"].mean(), 2)
+#average_subs_by_ranking = round(df_selection["Subscribers (millions)"].mean(), 2)
+top_subs = max(df_selection["Subscribers (millions)"])
 
 left_column, right_column = st.columns(2)
 with left_column:
     st.subheader("Total Subscribers:")
-    st.subheader(f"{total_subs} Millions")
+    st.subheader(f"{total_subs} Million")
 with right_column:
-    st.subheader("Average Subscribers Per Ranking:")
-    st.subheader(f"{average_subs_by_ranking}")
+    st.subheader("Top Youtuber Subscribers Count:")
+    st.subheader(f"{top_subs} Million")
 
 st.markdown("---")
 
@@ -95,7 +99,7 @@ fig_subs.update_layout(
     plot_bgcolor = "rgba(0,0,0,0)",
     xaxis = (dict(showgrid=False)),
 )
-st.plotly_chart(fig_subs)
+#st.plotly_chart(fig_subs)
 
 #Subscribers by Country
 subs_by_category = (
@@ -111,17 +115,21 @@ fig_pie = px.pie(
     color_discrete_sequence=px.colors.qualitative.Plotly,
     template="plotly_white",
 )
-st.plotly_chart(fig_pie)
+#st.plotly_chart(fig_pie)
+
+lft_column, rght_column = st.columns(2)
+left_column.plotly_chart(fig_subs, use_container_width=True)
+right_column.plotly_chart(fig_pie, use_container_width=True)
 
 
 
 ################## ------- STYLING OF THE PAGE -------
 #hiding Streamlit default styling
-hide_st_styles = """
-                <style>
-                #MainMenu {visibility:hidden;}
-                footer {visibility:hidden;}
-                header {visibility:hidden;}
-                </style>
-                """
-st.markdown(hide_st_styles, unsafe_allow_html=True)
+hide_st_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_st_style, unsafe_allow_html=True)
